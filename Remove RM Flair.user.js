@@ -1,13 +1,13 @@
 // ==UserScript==
-// @name RemoveRM_Flair
+// @name Remove RM flair
 // @namespace https://github.com/MdoubleDash
 // @version 1.1
 // @description Removes the recognized member text from RM's flair
 // @author MDoubleDash (@M--)
 // @contributor  @Makyen
 // @match *://*.stackoverflow.com/questions/*
-// @downloadURL https://github.com/MdoubleDash/Remove_RM_Flair/edit/main/Remove RM Flair.user.js
-// @updateURL   https://github.com/MdoubleDash/Remove_RM_Flair/edit/main/Remove RM Flair.user.js
+// @downloadURL https://github.com/MdoubleDash/SOS_Userscripts/raw/main/Remove%20RM%20Flair.user.js
+// @updateURL   https://github.com/MdoubleDash/SOS_Userscripts/raw/main/Remove%20RM%20Flair.user.js
 // @grant none
 // ==/UserScript==
 
