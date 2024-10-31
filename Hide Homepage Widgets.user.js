@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name Hide Homepage Widgets
 // @namespace https://github.com/MdoubleDash
-// @version 2.0
+// @version 2.1
 // @description Removes the new widgets on Stack Overflow's homepage
 // @author @canon, MDoubleDash (@M--)
 // @contributor @VLAZ
