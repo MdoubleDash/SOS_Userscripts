@@ -19,7 +19,7 @@
   const postsMessage = document.querySelector('.d-flex.fd-column.mb16');
 
   if (!(widgetsContainer)) return;
-  const [tagModal,tagWidget] = widgetsContainer.querySelectorAll(".widgets>:nth-child(n+4)");
+  const [tagWidget,tagModal] = widgetsContainer.querySelector(".right-widget").children;
   const [tagHeader,tagContent] = tagWidget.children;
 
   blogWidget.before(tagModal, tagWidget);
