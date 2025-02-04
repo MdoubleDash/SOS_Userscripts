@@ -5,6 +5,7 @@
      // @description  Adds an "inline edit" button beside the share button under each post and reply
      // @author       MDoubleDash (@M--)
      // @match        https://stackoverflow.com/beta/discussions/*
+     // @match        https://stackoverflow.com/posts/*/edit-inline
      // @downloadURL  https://github.com/MdoubleDash/SOS_Userscripts/raw/main/Inline%20Edit%20for%20Discussions.user.js
      // @updateURL    https://github.com/MdoubleDash/SOS_Userscripts/raw/main/Inline%20Edit%20for%20Discussions.user.js
      // @grant        none
@@ -12,6 +13,11 @@
 
      (function() {
      'use strict';
+
+     // Inline Edit page tweaks
+     document.documentElement.insertAdjacentHTML('beforeend', '<style type="text/css" id="screen-reader"> .js-stacks-editor-container { display: none; }</style>')
+     document.documentElement.insertAdjacentHTML('beforeend', '<style type="text/css" id="screen-reader"> .flex--item.pt8 { display: none; }</style>')
+     document.documentElement.insertAdjacentHTML('beforeend', '<style type="text/css" id="screen-reader"> .d-none.js-stacks-editor-backing-textarea { width:650px; height:300px }</style>')
 
      // Function to create the inline edit button
      function createInlineEditButton(postId) {
