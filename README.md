@@ -6,4 +6,6 @@
 
 * Hide homepage widgets: Userscript to hide the newly introduced homepage widgets.
 
-* Hide "Products" button on the top bar; particularly helpful on mobile devices (you can install TamperMonkey on FireFox for Android).
+* Hide products button: Removing the infamous "Products" button on the top nav bar; particularly helpful on mobile devices (you can install TamperMonkey on FireFox for Android).
+
+* Inline edit for Discussions: Adds an "inline edit" button beside the share button under each post and reply.
