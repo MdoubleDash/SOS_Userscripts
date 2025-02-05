@@ -22,8 +22,8 @@
      // Function to create the inline edit button
      function createInlineEditButton(postId) {
           const button = document.createElement('button');
-          button.textContent = 'Inline Edit';
-          button.className = 's-btn s-btn__link'; // Match the style of existing buttons
+          button.textContent = 'Inline-Edit';
+          button.className = 's-btn s-btn__link fc-black-400'; // Match the style of existing buttons
           button.style.marginLeft = '10px';
           button.onclick = function() {
                window.location.href = `https://stackoverflow.com/posts/${postId}/edit-inline`;
