@@ -3,7 +3,8 @@
 // @namespace    https://github.com/MdoubleDash
 // @version      0.1
 // @description  Makes the score and voting buttons for a post move with the viewport
-// @author       MDoubleDash (@M--), TylerH
+// @author       MDoubleDash (@M--)
+// @contributor  @TylerH
 // @match        *://*.stackoverflow.com/*
 // @match        *://*.stackexchange.com/*
 // @match        *://*.askubuntu.com/*
