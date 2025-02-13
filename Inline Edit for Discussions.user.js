@@ -99,8 +99,8 @@
 
     // Remove save button and change warning text if the warning div exists and contains specific text
     function checkPrivileges() {
+        const warningDiv = document.querySelector('.s-notice.s-notice__warning');
         if (warningDiv) {
-            const warningDiv = document.querySelector('.s-notice.s-notice__warning');
             if (warningDiv.textContent.includes('Your edit will be placed in a queue until it is peer reviewed.')) {
                 warningDiv.innerHTML = `
                     <p class="warning-text">Sorry, you don't have the sufficient privileges (>2k reputation) to edit Discussions!</p>
