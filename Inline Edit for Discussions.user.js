@@ -103,7 +103,7 @@
         if (warningDiv) {
             if (warningDiv.textContent.includes('Your edit will be placed in a queue until it is peer reviewed.')) {
                 warningDiv.innerHTML = `
-                    <p class="warning-text">Sorry, you don't have the sufficient privileges (>2k reputation) to edit Discussions!</p>
+                    <p class="error-text" style="color: red;">Sorry, you don't have the sufficient privileges (>2k reputation) to edit Discussions!</p>
                 `;
                 const form = document.querySelector('.inline-post');
                 const postId = form ? form.querySelector('#post-id').value : null;
@@ -116,7 +116,7 @@
             } else {
                 const form = document.querySelector('.inline-post');
                 form.insertAdjacentHTML('afterbegin', `
-                    <p class="bold-text" style="max-width: 650px;">Please remember Discussions and Q&A have different formats and editing guidelines. Therefore, common practices like removing greetings may not apply to discussions.</p>
+                    <p class="warning-text" style="max-width: 650px;">Please remember Discussions and Q&A have different formats and editing guidelines. Therefore, common practices like removing greetings may not apply to discussions.</p>
                 `);
             }
         }
