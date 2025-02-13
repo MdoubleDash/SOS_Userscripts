@@ -67,7 +67,7 @@
                         <div class="form-item p0 js-stacks-validation js-tag-editor-container ">
                             <div class="d-flex ai-center jc-space-between">
                                 <label for="tagnames" class="s-label mb4 d-block flex--item fl1 ">
-                                    Tags<abbr class="s-required-symbol" title="required">*</abbr>
+                                    Tags (space-delimited) <abbr class="s-required-symbol" title="required">*</abbr>
                                 </label>
                             </div>
                             <div class="d-flex fd-column g4 ps-relative">
@@ -99,18 +99,25 @@
 
     // Remove save button and change warning text if the warning div exists and contains specific text
     function checkPrivileges() {
-        const warningDiv = document.querySelector('.s-notice.s-notice__warning');
-        if (warningDiv && warningDiv.textContent.includes('Your edit will be placed in a queue until it is peer reviewed.')) {
-            warningDiv.innerHTML = `
-                <p class="warning-text">Sorry, you don't have the sufficient privileges (>2k reputation) to edit Discussions!</p>
-            `;
-            const form = document.querySelector('.inline-post');
-            const postId = form ? form.querySelector('#post-id').value : null;
-            if (postId) {
-                const saveButton = document.querySelector(`#submit-button-${postId}`);
-                if (saveButton) {
-                    saveButton.remove();
+        if (warningDiv) {
+            const warningDiv = document.querySelector('.s-notice.s-notice__warning');
+            if (warningDiv.textContent.includes('Your edit will be placed in a queue until it is peer reviewed.')) {
+                warningDiv.innerHTML = `
+                    <p class="warning-text">Sorry, you don't have the sufficient privileges (>2k reputation) to edit Discussions!</p>
+                `;
+                const form = document.querySelector('.inline-post');
+                const postId = form ? form.querySelector('#post-id').value : null;
+                if (postId) {
+                    const saveButton = document.querySelector(`#submit-button-${postId}`);
+                    if (saveButton) {
+                        saveButton.remove();
+                    }
                 }
+            } else {
+                const form = document.querySelector('.inline-post');
+                form.insertAdjacentHTML('afterbegin', `
+                    <p class="bold-text" style="max-width: 650px;">Please remember Discussions and Q&A have different formats and editing guidelines. Therefore, common practices like removing greetings may not apply to discussions.</p>
+                `);
             }
         }
     }
