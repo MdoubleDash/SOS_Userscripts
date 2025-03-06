@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name Hide Homepage Widgets
 // @namespace https://github.com/MdoubleDash
-// @version 2.2
+// @version 2.5
 // @description Removes the new widgets on Stack Overflow's homepage
 // @author MDoubleDash (@M--), @canon
-// @contributor @VLAZ
+// @contributor @VLAZ, @KevinB
 // @match https://stackoverflow.com/
 // @downloadURL https://github.com/MdoubleDash/SOS_Userscripts/raw/main/Hide%20Homepage%20Widgets.user.js
 // @updateURL https://github.com/MdoubleDash/SOS_Userscripts/raw/main/Hide%20Homepage%20Widgets.user.js
@@ -25,9 +25,17 @@
   const widgetsContainerItems = widgetsContainer.querySelectorAll(".s-card.grid--item");
   const tagWidget = widgetsContainerItems[2];
 
+  // add a CSS class to hide all widgets inside widgetsContainer except for the "Watched tags" widget
+  const style = document.createElement('style');
+  style.innerHTML = `
+    #widgets-container .s-card.grid--item:not(:nth-child(3)) {
+      display: none !important;
+    }
+  `;
+  document.head.appendChild(style);
+
   // move the watched tag widget to the right sidebar
   blogWidget.before(tagWidget);
-  widgetsContainer.remove();
 
   // remove the welcome message and modify the "interesting posts"
   $('.d-flex.fd-column.mb16').find(".fs-title.fw-bold").text("Suggested posts for you");
