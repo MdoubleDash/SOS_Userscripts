@@ -4,7 +4,7 @@
 // @version 2.5
 // @description Removes the new widgets on Stack Overflow's homepage
 // @author MDoubleDash (@M--), @canon
-// @contributor @VLAZ, @KevinB
+// @contributor PurpleMagick (@VLAZ), tentonaxe (@KevinB)
 // @match https://stackoverflow.com/
 // @downloadURL https://github.com/MdoubleDash/SOS_Userscripts/raw/main/Hide%20Homepage%20Widgets.user.js
 // @updateURL https://github.com/MdoubleDash/SOS_Userscripts/raw/main/Hide%20Homepage%20Widgets.user.js
