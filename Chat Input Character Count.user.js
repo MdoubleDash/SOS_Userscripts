@@ -3,7 +3,7 @@
 // @namespace    https://github.com/MdoubleDash
 // @version      0.5
 // @description  Adds a character count to Chat's textarea input
-// @author       MDoubleDash(@M--)
+// @author       MDoubleDash (@M--)
 // @match        https://chat.stackoverflow.com/*
 // @match        https://chat.stackexchange.com/*
 // @match        https://chat.meta.stackexchange.com/*
