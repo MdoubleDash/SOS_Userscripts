@@ -1,39 +1,124 @@
 // ==UserScript==
 // @name         Discussions Moderation Comments
 // @namespace    https://github.com/MdoubleDash
-// @version      0.2
+// @version      0.4
 // @description  show a pop-up with pre-compiled messages when discussion text box is right-clicked
-// @author       MDoubleDash (@M--)
+// @author       MDoubleDash (@M--), PurpleMagick (@VLAZ)
 // @match        https://stackoverflow.com/beta/discussions/*
 // @downloadURL  https://github.com/MdoubleDash/SOS_Userscripts/raw/main/Discussions%20Moderation%20Comments.user.js
 // @downloadURL  https://github.com/MdoubleDash/SOS_Userscripts/raw/main/Discussions%20Moderation%20Comments.user.js
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_deleteValue
+// @grant        GM_addStyle
 // ==/UserScript==
+
+// temp popup to extract the background color
+const popup = document.createElement('div');
+popup.classList.add('s-popover', 's-popover__tooltip', 'is-visible');
+popup.id = 'temp-popup';
+document.body.appendChild(popup);
+
+// Get the computed background color of the popup
+const computedStyle = getComputedStyle(popup);
+const backgroundColor = computedStyle.backgroundColor;
+document.body.removeChild(popup);
+
+// Convert the background color to rgba with transparency
+const rgbaColor = backgroundColor.replace('rgb', 'rgba').replace(')', ', 0.9)');
+
+GM_addStyle(`
+    .discussion-modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+        width: 70%;
+        height: 70%;
+        max-width: 70%;
+        max-height: 70%;
+        overflow: auto;
+        background-color: rgbaColor
+    }
+    .modal-content {
+        padding: 12px;
+        border: 1px solid #000;
+        border-radius: 4px;
+    }
+    .close-button {
+        margin-left: auto;
+    }
+    .search-input {
+        margin-bottom: 12px;
+    }
+    .text-element {
+        margin-bottom: 12px;
+        padding: 12px;
+        background-color: rgbaColor;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .edit-modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+        width: 70%;
+        height: 70%;
+        max-width: 70%;
+        max-height: 70%;
+        overflow: auto;
+        background-color: rgbaColor
+    }
+    .edit-modal-content {
+        padding: 12px;
+        border: 1px solid #000;
+        border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+    }
+    .textarea {
+        flex: 1;
+        width: 100%;
+        height: 100%;
+        margin-bottom: 12px;
+    }
+
+
+    .saveEdit-button {
+        background-color: #007bff;
+        color: #ffffff;
+        margin-bottom: 12px;
+    }
+`);
 
 (function() {
     'use strict';
 
     // Load pre-compiled texts from local storage or use default values
     let preCompiledComments = GM_getValue('preCompiledComments', [
-        { title: "Very minimal and low quality discussion", 
-            text: "We are deleting this post. If you want to start a conversation about this topic please add more detail or specifics and then repost it. Alternatively, if you are looking to get a specific answer to a programming problem, that should be [posted as a Question](https://stackoverflow.com/help/how-to-ask), rather than a Discussion post." 
+        { title: "Very minimal and low quality discussion",
+            text: "We are deleting this post. If you want to start a conversation about this topic please add more detail or specifics and then repost it. Alternatively, if you are looking to get a specific answer to a programming problem, that should be [posted as a Question](https://stackoverflow.com/help/how-to-ask), rather than a Discussion post."
         },
-        { title: "Repost of own Question as a discussion", 
-            text: "I'm deleting this post because Discussions should not be used to draw more attention to existing Questions on Stack Overflow. This Discussions space is intended for more general conversations about technical concepts, including subjective opinions (see the [Discussions guidelines](https://stackoverflow.com/help/discussions-guidelines)). If you have an idea for something that would be interesting to discuss feel free to make a new Discussion post." 
+        { title: "Repost of own Question as a discussion",
+            text: "I'm deleting this post because Discussions should not be used to draw more attention to existing Questions on Stack Overflow. This Discussions space is intended for more general conversations about technical concepts, including subjective opinions (see the [Discussions guidelines](https://stackoverflow.com/help/discussions-guidelines)). If you have an idea for something that would be interesting to discuss feel free to make a new Discussion post."
         },
-        { title: "Discussion in a language other than English", 
-            text: "I'm deleting your post because it is written in a language other than English. While we understand that this may be frustrating, we don't have the moderation capacity to allow posts to be written in any human language. We suggest using machine translation (such as Google Translate) to translate your post into English and then reposting it. [See this page](https://stackoverflow.com/help/non-english-questions) for more information." 
+        { title: "Discussion in a language other than English",
+            text: "I'm deleting your post because it is written in a language other than English. While we understand that this may be frustrating, we don't have the moderation capacity to allow posts to be written in any human language. We suggest using machine translation (such as Google Translate) to translate your post into English and then reposting it. [See this page](https://stackoverflow.com/help/non-english-questions) for more information."
         },
-        { title: "Spam from a well-intention and experienced user (e.g. promotional but relevant, not from a brand new account)", 
-            text: "We have removed your post because it appears to be [spam](https://stackoverflow.com/help/promotion) or is not attempting to start any meaningful interaction. Stack Overflow is a community dedicated to helping developers learn and share knowledge about programming and technical concepts. We encourage contributions that align with this mission and adhere to our [community guidelines](https://stackoverflow.com/help/behavior)." 
+        { title: "Spam from a well-intention and experienced user (e.g. promotional but relevant, not from a brand new account)",
+            text: "We have removed your post because it appears to be [spam](https://stackoverflow.com/help/promotion) or is not attempting to start any meaningful interaction. Stack Overflow is a community dedicated to helping developers learn and share knowledge about programming and technical concepts. We encourage contributions that align with this mission and adhere to our [community guidelines](https://stackoverflow.com/help/behavior)."
         },
-        { title: "Spam (posting without disclosure or excessive promotion)", 
-            text: "We have removed your post. Excessive promotion of a specific product/resource may be perceived by the community as **spam**. Take a look at the [the Stack Overflow Help Center](https://stackoverflow.com/help), especially [What kind of behavior is expected of users?](https://stackoverflow.com/help/behavior)'s last section: _Avoid overt self-promotion_. You might also be interested in [How to not be a spammer](https://stackoverflow.com/help/promotion) and [How do I advertise on Stack Overflow?](https://stackoverflow.com//help/advertising)." 
+        { title: "Spam (posting without disclosure or excessive promotion)",
+            text: "We have removed your post. Excessive promotion of a specific product/resource may be perceived by the community as **spam**. Take a look at the [the Stack Overflow Help Center](https://stackoverflow.com/help), especially [What kind of behavior is expected of users?](https://stackoverflow.com/help/behavior)'s last section: _Avoid overt self-promotion_. You might also be interested in [How to not be a spammer](https://stackoverflow.com/help/promotion) and [How do I advertise on Stack Overflow?](https://stackoverflow.com//help/advertising)."
         },
-        { title: "Seeking or posting a job opportunity", 
-            text: "I am deleting your post because posting or seeking job opportunities is discouraged in the Discussions space [per the Discussions guidelines](https://stackoverflow.com/help/discussions-guidelines). However, you may be interested in checking out [Stack Overflow Jobs](https://stackoverflow.jobs/?source=so-left-nav), which is also linked from the left navigation of Stack Overflow under 'Labs'." 
+        { title: "Seeking or posting a job opportunity",
+            text: "I am deleting your post because posting or seeking job opportunities is discouraged in the Discussions space [per the Discussions guidelines](https://stackoverflow.com/help/discussions-guidelines). However, you may be interested in checking out [Stack Overflow Jobs](https://stackoverflow.jobs/?source=so-left-nav), which is also linked from the left navigation of Stack Overflow under 'Labs'."
         },
         { title: "New user, Should be a Question",
             text: "I'm deleting your post because this seems like a specific programming question, rather than a conversation starter. With more detail added, this may be better as a Question rather than a Discussions post. Please see [this page](https://stackoverflow.com/help/how-to-ask) for help on asking a question on Stack Overflow. If you are interested in starting a more general conversation about how to approach a technical issue or concept, feel free to make another Discussion post."
@@ -90,42 +175,17 @@
     // Function to create and show the modal window
     function showPopup(target) {
         // Create the modal container
-        const popup = document.createElement('div');
-        popup.classList.add('s-popover', 's-popover__tooltip', 'is-visible');
-        popup.id = 'temp-popup';
-        document.body.appendChild(popup);
-
-        // Get the computed background color of the popup
-        const computedStyle = getComputedStyle(popup);
-        const backgroundColor = computedStyle.backgroundColor;
-        document.body.removeChild(popup);
-
-        // Convert the background color to rgba with transparency
-        const rgbaColor = backgroundColor.replace('rgb', 'rgba').replace(')', ', 0.9)');
-
-        // Create the modal container
         const modal = document.createElement('div');
-        modal.classList.add('s-popover', 's-popover__tooltip', 'is-visible');
+        modal.classList.add('s-popover', 's-popover__tooltip', 'is-visible', 'discussion-modal');
         modal.id = 'discussion-modal';
-        modal.style.position = 'fixed';
-        modal.style.top = '50%';
-        modal.style.left = '50%';
-        modal.style.transform = 'translate(-50%, -50%)';
-        modal.style.zIndex = '9999';
-        modal.style.width = '70%';
-        modal.style.height = '70%';
-        modal.style.maxWidth = '70%';
-        modal.style.maxHeight = '70%';
-        modal.style.overflow = 'auto';
-        modal.style.backgroundColor = rgbaColor; 
 
         // Create the modal content
         const modalContent = document.createElement('div');
-        modalContent.classList.add('p12', 'ba', 'bc-black-3', 'bar-sm');
+        modalContent.classList.add('modal-content');
 
         // Create the close button
         const closeButton = document.createElement('button');
-        closeButton.classList.add('s-btn', 's-btn__muted', 's-btn__icon', 'ml-auto');
+        closeButton.classList.add('s-btn', 's-btn__muted', 's-btn__icon', 'close-button');
         closeButton.innerHTML = '<svg aria-hidden="true" class="svg-icon iconClear" width="18" height="18" viewBox="0 0 18 18"><path d="M15 4.41L13.59 3 9 7.59 4.41 3 3 4.41 7.59 9 3 13.59 4.41 15 9 10.41 13.59 15 15 13.59 10.41 9z"></path></svg>';
         closeButton.addEventListener('click', () => {
             document.body.removeChild(modal);
@@ -138,7 +198,7 @@
         const searchInput = document.createElement('input');
         searchInput.type = 'text';
         searchInput.placeholder = 'Search...';
-        searchInput.classList.add('s-input', 'mb12');
+        searchInput.classList.add('s-input', 'search-input');
         modalContent.appendChild(searchInput);
 
         // Function to render the pre-compiled texts
@@ -151,7 +211,7 @@
             preCompiledComments.forEach(item => {
                 if (item.title.toLowerCase().includes(filter.toLowerCase()) || item.text.toLowerCase().includes(filter.toLowerCase())) {
                     const textElement = document.createElement('div');
-                    textElement.classList.add('s-block-link', 's-block-link__hover', 'text-element', 'mb12', 'p12', 'bg-black-025', 'bar-sm');
+                    textElement.classList.add('s-block-link', 's-block-link__hover', 'text-element');
                     textElement.style.cursor = 'pointer';
 
                     const titleElement = document.createElement('span');
@@ -204,7 +264,7 @@
 
         // Create the edit button
         const editButton = document.createElement('button');
-        editButton.classList.add('s-btn', 's-btn__primary', 'mb12');
+        editButton.classList.add('s-btn', 's-btn__primary', 'saveEdit-button');
         editButton.textContent = 'Edit';
         editButton.addEventListener('click', () => {
             showEditModal(modal);
@@ -239,47 +299,18 @@
 
     // Function to show the edit modal
     function showEditModal(modal) {
-        // Create the modal container
-        const popup = document.createElement('div');
-        popup.classList.add('s-popover', 's-popover__tooltip', 'is-visible');
-        popup.id = 'temp-popup';
-        document.body.appendChild(popup);
-
-        // Get the computed background color of the popup
-        const computedStyle = getComputedStyle(popup);
-        const backgroundColor = computedStyle.backgroundColor;
-        document.body.removeChild(popup);
-
-        // Convert the background color to rgba with transparency
-        const rgbaColor = backgroundColor.replace('rgb', 'rgba').replace(')', ', 0.9)');
-
         // Create the edit modal container
         const editModal = document.createElement('div');
-        editModal.classList.add('s-popover', 's-popover__tooltip', 'is-visible');
+        editModal.classList.add('s-popover', 's-popover__tooltip', 'is-visible', 'edit-modal');
         editModal.id = 'edit-modal';
-        editModal.style.position = 'fixed';
-        editModal.style.top = '50%';
-        editModal.style.left = '50%';
-        editModal.style.transform = 'translate(-50%, -50%)';
-        editModal.style.zIndex = '9999';
-        editModal.style.width = '70%';
-        editModal.style.height = '70%';
-        editModal.style.maxWidth = '70%';
-        editModal.style.maxHeight = '70%';
-        editModal.style.overflow = 'auto';
-        editModal.style.backgroundColor = rgbaColor;
 
         // Create the edit modal content
         const editModalContent = document.createElement('div');
-        editModalContent.classList.add('p12', 'ba', 'bc-black-3', 'bar-sm');
-        editModalContent.style.width = '100%';
-        editModalContent.style.height = '100%';
-        editModalContent.style.display = 'flex';
-        editModalContent.style.flexDirection = 'column';
+        editModalContent.classList.add('edit-modal-content');
 
         // Create the close button for the edit modal
         const closeButton = document.createElement('button');
-        closeButton.classList.add('s-btn', 's-btn__muted', 's-btn__icon', 'ml-auto');
+        closeButton.classList.add('s-btn', 's-btn__muted', 's-btn__icon', 'close-button');
         closeButton.innerHTML = '<svg aria-hidden="true" class="svg-icon iconClear" width="18" height="18" viewBox="0 0 18 18"><path d="M15 4.41L13.59 3 9 7.59 4.41 3 3 4.41 7.59 9 3 13.59 4.41 15 9 10.41 13.59 15 15 13.59 10.41 9z"></path></svg>';
         closeButton.addEventListener('click', () => {
             document.body.removeChild(editModal);
@@ -289,7 +320,7 @@
 
         // Create the textarea for editing comments
         const textarea = document.createElement('textarea');
-        textarea.classList.add('s-textarea', 'mb12');
+        textarea.classList.add('s-textarea', 'textarea');
         textarea.style.flex = '1';
         textarea.style.width = '100%';
         textarea.style.height = '100%';
@@ -298,10 +329,7 @@
 
         // Create the save button
         const saveButton = document.createElement('button');
-
-        saveButton.classList.add('s-btn', 's-btn__primary', 'mb12');
-        saveButton.style.backgroundColor = '#007bff'; 
-        saveButton.style.color = '#ffffff'; 
+        saveButton.classList.add('s-btn', 's-btn__primary', 'saveEdit-button');
         saveButton.textContent = 'Save';
         saveButton.addEventListener('click', (e) => {
             e.stopPropagation(); // Prevent the click from propagating to the onClickOutside
@@ -322,9 +350,9 @@
 
         // Check if the clicked element is the discussion text box
         if (target.classList.contains('js-editor')) {
-            e.preventDefault(); 
+            e.preventDefault();
             showPopup(target);
         }
-    }, true); 
+    }, true);
 
 })();
