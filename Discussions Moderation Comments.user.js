@@ -115,17 +115,17 @@ GM_addStyle(`
 
     // Load pre-compiled texts from local storage or use default values
     let preCompiledComments = GM_getValue('preCompiledComments', [
-        { title: "Very minimal and low quality discussion",
+        { title: "Unclear and/or low quality discussion",
             text: "If you want to start a conversation about this topic please add more detail or specifics and then repost it. Alternatively, if you are looking to get a specific answer to a programming problem, that should be [posted as a Question](https://stackoverflow.com/help/how-to-ask), rather than a Discussion post."
         },
         { title: "Repost of own Question as a discussion",
             text: "Discussions should not be used to draw more attention to existing Questions on Stack Overflow. This Discussions space is intended for more general conversations about technical concepts, including subjective opinions (see the [Discussions guidelines](https://stackoverflow.com/help/discussions-guidelines)). If you have an idea for something that would be interesting to discuss feel free to make a new Discussion post."
         },
         { title: "Discussion in a language other than English",
-            text: "It is written in a language other than English. While we understand that this may be frustrating, we don't have the moderation capacity to allow posts to be written in any human language. We suggest using machine translation (such as Google Translate) to translate your post into English and then reposting it. [See this page](https://stackoverflow.com/help/non-english-questions) for more information."
+            text: "This is written in a language other than English. While we understand that this may be frustrating, we don't have the moderation capacity to allow posts to be written in any human language. We suggest using machine translation (such as Google Translate) to translate your post into English and then reposting it. [See this page](https://stackoverflow.com/help/non-english-questions) for more information."
         },
-        { title: "Spam from a well-intention and experienced user (e.g. promotional but relevant, not from a brand new account)",
-            text: "It appears to be [spam](https://stackoverflow.com/help/promotion) or is not attempting to start any meaningful interaction. Stack Overflow is a community dedicated to helping developers learn and share knowledge about programming and technical concepts. We encourage contributions that align with this mission and adhere to our [community guidelines](https://stackoverflow.com/help/behavior)."
+        { title: "Spam from a experienced user (e.g. promotional but relevant, not from a brand new account)",
+            text: "This appears to be [spam](https://stackoverflow.com/help/promotion) or is not attempting to start any meaningful interaction. Stack Overflow is a community dedicated to helping developers learn and share knowledge about programming and technical concepts. We encourage contributions that align with this mission and adhere to our [community guidelines](https://stackoverflow.com/help/behavior)."
         },
         { title: "Spam (posting without disclosure or excessive promotion)",
             text: "Excessive promotion of a specific product/resource may be perceived by the community as **spam**. Take a look at the [the Stack Overflow Help Center](https://stackoverflow.com/help), especially [What kind of behavior is expected of users?](https://stackoverflow.com/help/behavior)'s last section: _Avoid overt self-promotion_. You might also be interested in [How to not be a spammer](https://stackoverflow.com/help/promotion) and [How do I advertise on Stack Overflow?](https://stackoverflow.com//help/advertising)."
@@ -140,7 +140,7 @@ GM_addStyle(`
             text: "This seems like more of a specific programming question, rather than a conversation starter. Unlike Q&A on Stack Overflow, the Discussions space is intended for more general conversations, including subjective opinions (see the [Discussions guidelines](https://stackoverflow.com/help/discussions-guidelines)). If you have an idea for something that would be interesting to discuss feel free to make a new Discussion post."
         },
         { title: "Replies to a post that should be a Question",
-            text:  "It's programming-specific and should have been posted in the Q&A section. It's good to see that the OP has gotten some help. We don't want to leave this visible to possibly confuse people about what goes in Discussions vs Q&A."
+            text:  "This  programming-specific and should have been posted in the Q&A section. It's good to see that the OP has gotten some help. We don't want to leave this visible to possibly confuse people about what goes in Discussions vs Q&A."
         },
         { title: "Unclear discussion or reply",
             text: "Discussions space is intended for conversations about technical concepts ([see the Discussions guidelines](https://stackoverflow.com/help/discussions-guidelines)). Your post does not seem like it's intended to start a discussion. If you have an idea for something that would be interesting to discuss feel free to make a new Discussion post."
