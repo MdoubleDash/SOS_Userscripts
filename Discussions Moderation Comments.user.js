@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Discussions Moderation Comments
 // @namespace    https://github.com/MdoubleDash
-// @version      0.4
+// @version      0.5
 // @description  show a pop-up with pre-compiled messages when discussion text box is right-clicked
 // @author       MDoubleDash (@M--), PurpleMagick (@VLAZ)
 // @match        https://stackoverflow.com/beta/discussions/*
@@ -45,9 +45,22 @@ GM_addStyle(`
         padding: 12px;
         border: 1px solid #000;
         border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+    }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
     }
     .close-button {
         margin-left: auto;
+        align-self: flex-start;
+    }
+    .checkbox-container {
+        display: flex;
+        align-items: center;
     }
     .search-input {
         margin-bottom: 12px;
@@ -103,34 +116,34 @@ GM_addStyle(`
     // Load pre-compiled texts from local storage or use default values
     let preCompiledComments = GM_getValue('preCompiledComments', [
         { title: "Very minimal and low quality discussion",
-            text: "We are deleting this post. If you want to start a conversation about this topic please add more detail or specifics and then repost it. Alternatively, if you are looking to get a specific answer to a programming problem, that should be [posted as a Question](https://stackoverflow.com/help/how-to-ask), rather than a Discussion post."
+            text: "If you want to start a conversation about this topic please add more detail or specifics and then repost it. Alternatively, if you are looking to get a specific answer to a programming problem, that should be [posted as a Question](https://stackoverflow.com/help/how-to-ask), rather than a Discussion post."
         },
         { title: "Repost of own Question as a discussion",
-            text: "I'm deleting this post because Discussions should not be used to draw more attention to existing Questions on Stack Overflow. This Discussions space is intended for more general conversations about technical concepts, including subjective opinions (see the [Discussions guidelines](https://stackoverflow.com/help/discussions-guidelines)). If you have an idea for something that would be interesting to discuss feel free to make a new Discussion post."
+            text: "Discussions should not be used to draw more attention to existing Questions on Stack Overflow. This Discussions space is intended for more general conversations about technical concepts, including subjective opinions (see the [Discussions guidelines](https://stackoverflow.com/help/discussions-guidelines)). If you have an idea for something that would be interesting to discuss feel free to make a new Discussion post."
         },
         { title: "Discussion in a language other than English",
-            text: "I'm deleting your post because it is written in a language other than English. While we understand that this may be frustrating, we don't have the moderation capacity to allow posts to be written in any human language. We suggest using machine translation (such as Google Translate) to translate your post into English and then reposting it. [See this page](https://stackoverflow.com/help/non-english-questions) for more information."
+            text: "It is written in a language other than English. While we understand that this may be frustrating, we don't have the moderation capacity to allow posts to be written in any human language. We suggest using machine translation (such as Google Translate) to translate your post into English and then reposting it. [See this page](https://stackoverflow.com/help/non-english-questions) for more information."
         },
         { title: "Spam from a well-intention and experienced user (e.g. promotional but relevant, not from a brand new account)",
-            text: "We have removed your post because it appears to be [spam](https://stackoverflow.com/help/promotion) or is not attempting to start any meaningful interaction. Stack Overflow is a community dedicated to helping developers learn and share knowledge about programming and technical concepts. We encourage contributions that align with this mission and adhere to our [community guidelines](https://stackoverflow.com/help/behavior)."
+            text: "It appears to be [spam](https://stackoverflow.com/help/promotion) or is not attempting to start any meaningful interaction. Stack Overflow is a community dedicated to helping developers learn and share knowledge about programming and technical concepts. We encourage contributions that align with this mission and adhere to our [community guidelines](https://stackoverflow.com/help/behavior)."
         },
         { title: "Spam (posting without disclosure or excessive promotion)",
-            text: "We have removed your post. Excessive promotion of a specific product/resource may be perceived by the community as **spam**. Take a look at the [the Stack Overflow Help Center](https://stackoverflow.com/help), especially [What kind of behavior is expected of users?](https://stackoverflow.com/help/behavior)'s last section: _Avoid overt self-promotion_. You might also be interested in [How to not be a spammer](https://stackoverflow.com/help/promotion) and [How do I advertise on Stack Overflow?](https://stackoverflow.com//help/advertising)."
+            text: "Excessive promotion of a specific product/resource may be perceived by the community as **spam**. Take a look at the [the Stack Overflow Help Center](https://stackoverflow.com/help), especially [What kind of behavior is expected of users?](https://stackoverflow.com/help/behavior)'s last section: _Avoid overt self-promotion_. You might also be interested in [How to not be a spammer](https://stackoverflow.com/help/promotion) and [How do I advertise on Stack Overflow?](https://stackoverflow.com//help/advertising)."
         },
         { title: "Seeking or posting a job opportunity",
-            text: "I am deleting your post because posting or seeking job opportunities is discouraged in the Discussions space [per the Discussions guidelines](https://stackoverflow.com/help/discussions-guidelines). However, you may be interested in checking out [Stack Overflow Jobs](https://stackoverflow.jobs/?source=so-left-nav), which is also linked from the left navigation of Stack Overflow under 'Labs'."
+            text: "Posting or seeking job opportunities is discouraged in the Discussions space [per the Discussions guidelines](https://stackoverflow.com/help/discussions-guidelines). However, you may be interested in checking out [Stack Overflow Jobs](https://stackoverflow.jobs/?source=so-left-nav), which is also linked from the left navigation of Stack Overflow under 'Labs'."
         },
         { title: "New user, Should be a Question",
-            text: "I'm deleting your post because this seems like a specific programming question, rather than a conversation starter. With more detail added, this may be better as a Question rather than a Discussions post. Please see [this page](https://stackoverflow.com/help/how-to-ask) for help on asking a question on Stack Overflow. If you are interested in starting a more general conversation about how to approach a technical issue or concept, feel free to make another Discussion post."
+            text: "This seems like a specific programming question, rather than a conversation starter. With more detail added, this may be better as a Question rather than a Discussions post. Please see [this page](https://stackoverflow.com/help/how-to-ask) for help on asking a question on Stack Overflow. If you are interested in starting a more general conversation about how to approach a technical issue or concept, feel free to make another Discussion post."
         },
         { title: "Experienced User, Should be a Question",
-            text: "I'm deleting your post because this seems like more of a specific programming question, rather than a conversation starter. Unlike Q&A on Stack Overflow, the Discussions space is intended for more general conversations, including subjective opinions (see the [Discussions guidelines](https://stackoverflow.com/help/discussions-guidelines)). If you have an idea for something that would be interesting to discuss feel free to make a new Discussion post."
+            text: "This seems like more of a specific programming question, rather than a conversation starter. Unlike Q&A on Stack Overflow, the Discussions space is intended for more general conversations, including subjective opinions (see the [Discussions guidelines](https://stackoverflow.com/help/discussions-guidelines)). If you have an idea for something that would be interesting to discuss feel free to make a new Discussion post."
         },
         { title: "Replies to a post that should be a Question",
-            text:  "This post is being deleted since it's programming-specific and should have been posted in the Q&A section. It's good to see that the OP has gotten some help. We don't want to leave this visible to possibly confuse people about what goes in Discussions vs Q&A."
+            text:  "It's programming-specific and should have been posted in the Q&A section. It's good to see that the OP has gotten some help. We don't want to leave this visible to possibly confuse people about what goes in Discussions vs Q&A."
         },
         { title: "Unclear discussion or reply",
-            text: "I'm deleting your post because this Discussions space is intended for conversations about technical concepts ([see the Discussions guidelines](https://stackoverflow.com/help/discussions-guidelines)). Your post does not seem like it's intended to start a discussion. If you have an idea for something that would be interesting to discuss feel free to make a new Discussion post."
+            text: "Discussions space is intended for conversations about technical concepts ([see the Discussions guidelines](https://stackoverflow.com/help/discussions-guidelines)). Your post does not seem like it's intended to start a discussion. If you have an idea for something that would be interesting to discuss feel free to make a new Discussion post."
         },
         { title: "Comment or Follow-up question posted as discussion",
             text : "It appears you have been misled by Stack Overflow's latest [experiment](https://meta.stackoverflow.com/q/433151). Despite what you were told, Discussions is not the place for follow-up questions, but for [discussions](https://stackoverflow.com/help/discussions-guidelines), and the person you wanted to be notified about your post here (in Discussions) was ***not*** notified. You should post this as a comment on the original post or, if you have a new question post a (new) [question](https://stackoverflow.com/questions/ask), demonstrating your attempt to implement a solution and explain why it didn't work."
@@ -183,6 +196,39 @@ GM_addStyle(`
         const modalContent = document.createElement('div');
         modalContent.classList.add('modal-content');
 
+        // Create the modal header
+        const modalHeader = document.createElement('div');
+        modalHeader.classList.add('modal-header');
+
+        // Check if the specific <a> element exists
+        const editLink = document.querySelector('a[href^="/beta/discussions/edit/"]');
+        if (editLink) {
+            // Add the checkbox to the header
+            const checkboxContainer = document.createElement('div');
+            checkboxContainer.classList.add('checkbox-container');
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = 'delete-post-checkbox';
+
+            // Load the checkbox state from storage
+            checkbox.checked = GM_getValue('deletePostCheckboxState', false);
+
+            const label = document.createElement('label');
+            label.htmlFor = 'delete-post-checkbox';
+            label.innerHTML = '<strong>Are you deleting the post?</strong>'; // Make the text bold
+            label.style.marginLeft = '8px';
+
+            checkbox.addEventListener('change', () => {
+                // Save the checkbox state to storage
+                GM_setValue('deletePostCheckboxState', checkbox.checked);
+            });
+
+            checkboxContainer.appendChild(checkbox);
+            checkboxContainer.appendChild(label);
+            modalHeader.appendChild(checkboxContainer);
+        }
+
         // Create the close button
         const closeButton = document.createElement('button');
         closeButton.classList.add('s-btn', 's-btn__muted', 's-btn__icon', 'close-button');
@@ -192,7 +238,8 @@ GM_addStyle(`
             document.removeEventListener('click', onClickOutside);
         });
 
-        modalContent.appendChild(closeButton);
+        modalHeader.appendChild(closeButton);
+        modalContent.appendChild(modalHeader);
 
         // Create the search input
         const searchInput = document.createElement('input');
@@ -238,13 +285,17 @@ GM_addStyle(`
                     textElement.appendChild(fullTextElement);
 
                     textElement.addEventListener('click', () => {
-                        target.textContent += item.text;
+                        const isDeletingPost = document.getElementById('delete-post-checkbox')?.checked;
+                        const prefix = isDeletingPost ? "We have removed your post. " : "";
+                        target.textContent += prefix + item.text;
                         document.body.removeChild(modal);
                         document.removeEventListener('click', onClickOutside);
                     });
 
                     fullTextElement.addEventListener('click', () => {
-                        target.textContent += item.text;
+                        const isDeletingPost = document.getElementById('delete-post-checkbox')?.checked;
+                        const prefix = isDeletingPost ? "We have removed your post. " : "";
+                        target.textContent += prefix + item.text;
                         document.body.removeChild(modal);
                         document.removeEventListener('click', onClickOutside);
                     });
