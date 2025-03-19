@@ -140,7 +140,7 @@ GM_addStyle(`
             text: "This seems like more of a specific programming question, rather than a conversation starter. Unlike Q&A on Stack Overflow, the Discussions space is intended for more general conversations, including subjective opinions (see the [Discussions guidelines](https://stackoverflow.com/help/discussions-guidelines)). If you have an idea for something that would be interesting to discuss feel free to make a new Discussion post."
         },
         { title: "Replies to a post that should be a Question",
-            text:  "This  programming-specific and should have been posted in the Q&A section. It's good to see that the OP has gotten some help. We don't want to leave this visible to possibly confuse people about what goes in Discussions vs Q&A."
+            text:  "This seems like programming-specific and should have been posted in the Q&A section. It's good to see that the OP has gotten some help. We don't want to leave this visible to possibly confuse people about what goes in Discussions vs Q&A."
         },
         { title: "Unclear discussion or reply",
             text: "Discussions space is intended for conversations about technical concepts ([see the Discussions guidelines](https://stackoverflow.com/help/discussions-guidelines)). Your post does not seem like it's intended to start a discussion. If you have an idea for something that would be interesting to discuss feel free to make a new Discussion post."
