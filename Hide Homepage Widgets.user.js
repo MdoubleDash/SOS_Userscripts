@@ -20,6 +20,7 @@
   const blogWidget = document.querySelector('.s-sidebarwidget:has(a[href^="https://stackoverflow.blog/"]');
   const welcomeMessage = document.querySelector('.d-flex.g8');
   const postsMessage = document.querySelector('.d-flex.fd-column.mb16');
+  const dotsButton = document.querySelector('.dots.ta-center.mt8.d-none'); // 3-dots showing up in narrower browser windows, e.g. mobile
 
   // get the items in the widgets container
   const widgetsContainerItems = widgetsContainer.querySelectorAll(".s-card.grid--item");
@@ -42,6 +43,7 @@
   postsMessage.remove();
   welcomeMessage.before(postsMessage);
   welcomeMessage.remove();
+  dotsButton.remove();
 
   // fix display by borrowing class salad from adjacent sidebar widget...
   tagWidget.className = "s-sidebarwidget s-anchors s-anchors__grayscale mb16 p16";
