@@ -8,6 +8,8 @@
 - [Hide products button](#hide-products-button)
 - [Sticky Vote](#sticky-vote)
 - [Inline Edit for Discussions](#inline-edit-for-discussions)
+- [Discussions Moderation Comments](#discussions-moderation-comments)
+- [Chat Input Character Count](#chat-input-character-count) 
 
 ------
 
@@ -53,3 +55,16 @@
   &#8595;
   
   <img src="https://i.sstatic.net/3GxTunBl.png" style="width:600px;"/>
+
+#### [Discussions Moderation Comments](https://stackapps.com/q/10767): 
+
+   Userscript to load a list of pre-compiled comments and replies for Discussions moderation and curation. Simply right-click in the reply area (markdown mode) to see the list of comments.
+
+   <img src="https://i.sstatic.net/Hf9gIkOy.png" style="width:600px;"/>
+
+#### Chat Input Character Count:
+
+   A simple userscript to add a count for characters inputed into chat text area. This is particularly useful on mobile devices as there is no built-in functionality to warn you if you've exceeded the limit, except not being able to post your message.
+
+   <img src="https://github.com/user-attachments/assets/287c7f53-cc5e-466b-abd9-48a42fa5fa0f" style="width:700px;"/>
+
