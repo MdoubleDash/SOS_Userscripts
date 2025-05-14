@@ -6,7 +6,7 @@
 // @author       MDoubleDash (@M--), PurpleMagick (@VLAZ)
 // @match        https://stackoverflow.com/beta/discussions/*
 // @downloadURL  https://github.com/MdoubleDash/SOS_Userscripts/raw/main/Discussions%20Moderation%20Comments.user.js
-// @downloadURL  https://github.com/MdoubleDash/SOS_Userscripts/raw/main/Discussions%20Moderation%20Comments.user.js
+// @updateURL    https://github.com/MdoubleDash/SOS_Userscripts/raw/main/Discussions%20Moderation%20Comments.user.js
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_deleteValue
