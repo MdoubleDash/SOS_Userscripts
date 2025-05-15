@@ -9,7 +9,8 @@
 - [Sticky Vote](#sticky-vote)
 - [Inline Edit for Discussions](#inline-edit-for-discussions)
 - [Discussions Moderation Comments](#discussions-moderation-comments)
-- [Chat Input Character Count](#chat-input-character-count) 
+- [Chat Input Character Count](#chat-input-character-count)
+- [Copy Code from StackExchange](#copy-code-from-stackexchange)
 
 ------
 
@@ -34,7 +35,7 @@
   
   <img src="https://i.sstatic.net/yNTwfk0w.png" style="width:700px;"/>
 
-#### [Hide products button](https://stackapps.com/q/10695): 
+#### Hide products button: 
 
   Removing the infamous "Products" button on the top nav bar; particularly helpful on mobile devices (you can install TamperMonkey on FireFox for Android).
 
@@ -67,4 +68,10 @@
    A simple userscript to add a count for characters inputed into chat text area. This is particularly useful on mobile devices as there is no built-in functionality to warn you if you've exceeded the limit, except not being able to post your message.
 
    <img src="https://github.com/user-attachments/assets/287c7f53-cc5e-466b-abd9-48a42fa5fa0f" style="width:700px;"/>
+
+#### [Copy Code from StackExchange](https://stackapps.com/q/10803):
+
+   A userscript to add a copy button to code blocks on SE websites, to easily copy and paste code from questions and answers.
+
+   <img src="https://i.sstatic.net/8Awl5gTK.gif" style="width:700px;"/>
 
