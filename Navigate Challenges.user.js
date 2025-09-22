@@ -6,7 +6,8 @@
 // @author       MDoubleDash (M--)
 // @match        https://stackoverflow.com/beta/challenges/*
 // @match        https://stackoverflow.com/beta/discussions/*
-// @grant        none
+// @grant        GM_addStyle
+// @grant        GM.addStyle
 // @downloadURL  https://github.com/MdoubleDash/SOS_Userscripts/raw/main/Navigate%20Challenges.user.js
 // @updateURL    https://github.com/MdoubleDash/SOS_Userscripts/raw/main/Navigate%20Challenges.user.js
 // @run-at       document-end
@@ -17,355 +18,416 @@
 
     console.log('Challenge Navigator: Script starting...');
 
+    // Use userscript manager's addStyle if available, fallback to manual injection
+    const addStyle = GM_addStyle || (GM && GM.addStyle && GM.addStyle.bind(GM)) || function(css) {
+        const style = document.createElement('style');
+        style.textContent = css;
+        document.head.appendChild(style);
+    };
+
+
     // CSS styles
-    const style = document.createElement('style');
-    style.textContent = `
-        .deleted-post-collapsed .js-discussion-comment > div:not(.deletion-controls) {
-            display: none !important;
-        }
-
-        .deleted-post-collapsed [id^="js-reply-"][id$="-body"] > div:not(.deletion-controls) {
-            display: none !important;
-        }
-
-        .viewed-post-collapsed .js-discussion-comment > div:not(.viewed-controls) {
-            display: none !important;
-        }
-
-        .viewed-post-collapsed [id^="js-reply-"][id$="-body"] > div:not(.viewed-controls) {
-            display: none !important;
-        }
-
-        .deleted-post-collapsed, .viewed-post-collapsed {
-            margin-bottom: 8px !important;
-        }
-
-        .deleted-post-collapsed.mb48, .viewed-post-collapsed.mb48 {
-            margin-bottom: 8px !important;
-        }
-
-        .deleted-post-collapsed.mb24, .viewed-post-collapsed.mb24 {
-            margin-bottom: 8px !important;
-        }
-
-        .deletion-controls {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            border-radius: 6px;
-            padding: 12px;
-            margin: 8px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .viewed-controls {
-            background: #f0f9ff;
-            border: 1px solid #bae6fd;
-            border-radius: 6px;
-            padding: 12px;
-            margin: 8px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .deletion-info {
-            display: flex;
-            align-items: center;
-            color: #dc2626;
-            font-size: 14px;
-        }
-
-        .viewed-info {
-            display: flex;
-            align-items: center;
-            color: #0369a1;
-            font-size: 14px;
-        }
-
-        .deletion-icon, .viewed-icon {
-            margin-right: 8px;
-            font-size: 16px;
-        }
-
-        .collapse-toggle {
-            background: #dc2626;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .collapse-toggle:hover {
-            background: #b91c1c;
-        }
-
-        .expand-toggle {
-            background: #0369a1;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .expand-toggle:hover {
-            background: #1e40af;
-        }
-
-        .global-toggle {
-            position: fixed;
-            top: 60px;
-            right: 20px;
-            z-index: 1000;
-            background: #374151;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-
-        .global-toggle:hover {
-            background: #1f2937;
-        }
-
-        .global-toggle-viewed {
-            position: fixed;
-            top: 105px;
-            right: 20px;
-            z-index: 1000;
-            background: #0369a1;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-
-        .global-toggle-viewed:hover {
-            background: #1e40af;
-        }
-
-        .post-navigation {
-            position: fixed;
-            top: 150px;
-            right: 20px;
-            z-index: 1000;
-            background: white;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            min-width: 300px;
-            max-width: 400px;
-        }
-
-        .nav-header {
-            padding: 12px 16px;
-            background: #f9fafb;
-            border-bottom: 1px solid #e5e7eb;
-            border-radius: 6px 6px 0 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .nav-header:hover {
-            background: #f3f4f6;
-        }
-
-        .nav-title {
-            font-weight: 600;
-            font-size: 14px;
-            color: #374151;
-        }
-
-        .nav-count {
-            background: #6b7280;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-
-        .nav-arrow {
-            transition: transform 0.2s;
-            color: #6b7280;
-        }
-
-        .nav-arrow.expanded {
-            transform: rotate(180deg);
-        }
-
-        .nav-content {
-            max-height: 400px;
-            overflow-y: auto;
-            display: none;
-        }
-
-        .nav-content.expanded {
-            display: block;
-        }
-
-        .nav-item {
-            padding: 10px 16px;
-            border-bottom: 1px solid #f3f4f6;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .nav-item:hover {
-            background: #f9fafb;
-        }
-
-        .nav-item:last-child {
-            border-bottom: none;
-        }
-
-        .nav-item.deleted {
-            background: #fef2f2;
-            border-left: 3px solid #dc2626;
-        }
-
-        .nav-item.deleted:hover {
-            background: #fecaca;
-        }
-
-        .nav-item.reply {
-            padding-left: 32px;
-            border-left: 2px solid #e5e7eb;
-            background: #f9fafb;
-        }
-
-        .nav-item.reply:hover {
-            background: #f3f4f6;
-        }
-
-        .post-info {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .post-author {
-            font-weight: 500;
-            font-size: 13px;
-            color: #374151;
-        }
-
-        .post-date {
-            font-size: 11px;
-            color: #6b7280;
-        }
-
-        .post-preview {
-            font-size: 12px;
-            color: #4b5563;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 250px;
-        }
-
-        .post-status {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 10px;
-            font-weight: 500;
-            margin-left: 8px;
-        }
-
-        .status-deleted {
-            background: #fecaca;
-            color: #dc2626;
-        }
-
-        .status-normal {
-            background: #d1fae5;
-            color: #059669;
-        }
-
-        .status-viewed {
-            background: #bfdbfe;
-            color: #1d4ed8;
-        }
-
-	.post-checkbox-container {
-		    display: flex;
-		    align-items: center;
-		    justify-content: flex-end;
-		    margin-left: auto;
-		    gap: 6px;
-	    }
-
-	.post-checkbox-label {
-		    font-size: 12px;
-		    color: #475569;
-		    cursor: pointer;
-		    user-select: none;
-	    }
-
-	.post-checkbox {
-	    	margin: 0;
-		    cursor: pointer;
-		    transform: scale(1.2);
-	    }
-
-        /* Scrollbar styling for the navigation menu */
-        .nav-content::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .nav-content::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-
-        .nav-content::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
-        }
-
-        .nav-content::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-    `;
-    document.head.appendChild(style);
-
-let allPosts = [];
-let navigationMenu = null;
-let viewedPosts = new Set(); 
-
-// Try to load saved viewed posts from localStorage
-try {
-    const saved = localStorage.getItem('challengesViewedPosts');
-    if (saved) {
-        viewedPosts = new Set(JSON.parse(saved));
+    addStyle(`
+    /* Post Collapse States */
+    .deleted-post-collapsed .js-discussion-comment > div:not(.deletion-controls) {
+        display: none !important;
+        min-width: 100%;
+        width: 100%;
     }
-} catch (e) {
-    console.log('Challenge Navigator: Could not load viewed posts from storage');
-}
 
-function saveViewedPosts() {
+    .deleted-post-collapsed [id^="js-reply-"][id$="-body"] > div:not(.deletion-controls) {
+        display: none !important;
+    }
+
+    .viewed-post-collapsed .js-discussion-comment > div:not(.viewed-controls) {
+        display: none !important;
+        min-width: 100%;
+        width: 100%;
+    }
+
+    .viewed-post-collapsed [id^="js-reply-"][id$="-body"] > div:not(.viewed-controls) {
+        display: none !important;
+    }
+
+    .deleted-post-collapsed, .viewed-post-collapsed {
+        margin-bottom: 8px !important;
+        min-width: 100%;
+        width: 100%;
+    }
+
+    .deleted-post-collapsed.mb48, .viewed-post-collapsed.mb48 {
+        margin-bottom: 8px !important;
+    }
+
+    .deleted-post-collapsed.mb24, .viewed-post-collapsed.mb24 {
+        margin-bottom: 8px !important;
+    }
+
+    /* Control Panels */
+    .deletion-controls {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 6px;
+        padding: 12px;
+        margin: 8px 0;
+        display: flex;
+        min-width: 100%;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .viewed-controls {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 6px;
+        padding: 12px;
+        margin: 8px 0;
+        display: flex;
+        min-width: 100%;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .deletion-info {
+        display: flex;
+        align-items: center;
+        color: #dc2626;
+        font-size: 14px;
+    }
+
+    .viewed-info {
+        display: flex;
+        align-items: center;
+        color: #0369a1;
+        font-size: 14px;
+    }
+
+    .deletion-icon, .viewed-icon {
+        margin-right: 8px;
+        font-size: 16px;
+    }
+
+    /* Toggle Buttons */
+    .collapse-toggle {
+        background: #dc2626;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .collapse-toggle:hover {
+        background: #b91c1c;
+    }
+
+    .expand-toggle {
+        background: #0369a1;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .expand-toggle:hover {
+        background: #1e40af;
+    }
+
+    /* Global Buttons */
+    .global-toggle {
+        position: fixed;
+        top: 60px;
+        right: 20px;
+        z-index: 1000;
+        background: #374151;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .global-toggle:hover {
+        background: #1f2937;
+    }
+
+    .global-toggle-viewed {
+        position: fixed;
+        top: 105px;
+        right: 20px;
+        z-index: 1000;
+        background: #0369a1;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .global-toggle-viewed:hover {
+        background: #1e40af;
+    }
+
+    /* Navigation Menu */
+    .post-navigation {
+        position: fixed;
+        top: 150px;
+        right: 20px;
+        z-index: 1000;
+        background: white;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        min-width: 300px;
+        max-width: 400px;
+    }
+
+    .nav-header {
+        padding: 12px 16px;
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        border-radius: 6px 6px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .nav-header:hover {
+        background: #f3f4f6;
+    }
+
+    .nav-title {
+        font-weight: 600;
+        font-size: 14px;
+        color: #374151;
+    }
+
+    .nav-count {
+        background: #6b7280;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .nav-arrow {
+        transition: transform 0.2s;
+        color: #6b7280;
+    }
+
+    .nav-arrow.expanded {
+        transform: rotate(180deg);
+    }
+
+    .nav-content {
+        max-height: 400px;
+        overflow-y: auto;
+        display: none;
+    }
+
+    .nav-content.expanded {
+        display: block;
+    }
+
+    .nav-title-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Navigation Items */
+    .nav-item {
+        display: block;
+        padding: 10px 16px;
+        border-bottom: 1px solid #f3f4f6;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .nav-item:hover {
+        background: #f9fafb;
+        text-decoration: none;
+    }
+
+    .nav-item:last-child {
+        border-bottom: none;
+    }
+
+    .nav-item.deleted {
+        background: #fef2f2;
+        border-left: 3px solid #dc2626;
+    }
+
+    .nav-item.deleted:hover {
+        background: #fecaca;
+    }
+
+    .nav-item.reply {
+        padding-left: 32px;
+        border-left: 2px solid #e5e7eb;
+        background: #f9fafb;
+    }
+
+    .nav-item.reply:hover {
+        background: #f3f4f6;
+    }
+
+    /* Post Info Display */
+    .post-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .post-author-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .post-author {
+        font-weight: 500;
+        font-size: 13px;
+        color: #374151;
+    }
+
+    .post-date {
+        font-size: 11px;
+        color: #6b7280;
+    }
+
+    .post-preview {
+        font-size: 12px;
+        color: #4b5563;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 250px;
+    }
+
+    /* Status Indicators */
+    .post-status {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 10px;
+        font-weight: 500;
+        margin-left: 8px;
+    }
+
+    .status-deleted {
+        background: #fecaca;
+        color: #dc2626;
+    }
+
+    .status-normal {
+        background: #d1fae5;
+        color: #059669;
+    }
+
+    .status-viewed {
+        background: #bfdbfe;
+        color: #1d4ed8;
+    }
+
+    /* Post Checkboxes */
+    .post-checkbox-container {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        margin-left: auto;
+        gap: 12px;
+    }
+
+    .post-checkbox-label {
+        font-size: 12px;
+        color: #475569;
+        cursor: pointer;
+        user-select: none;
+    }
+
+   .theme-dark .post-checkbox-label {
+        color: #9ca3af;
+    }
+
+   .theme-highcontrast .post-checkbox-label {
+        color: #d1d5db;
+    }
+
+    .post-checkbox {
+        margin: 0;
+        cursor: pointer;
+        transform: scale(1.2);
+    }
+
+    /* Post Highlighting */
+    .post-highlight {
+        background-color: #fef3cd !important;
+        transition: background-color 0.3s ease;
+    }
+
+    .theme-dark .post-highlight {
+        background-color: #374151 !important;
+    }
+
+    .theme-highcontrast .post-highlight {
+        background-color: #1f2937 !important;
+    }
+
+    /* Scrollbar Styling */
+    .nav-content::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .nav-content::-webkit-scrollbar-track {
+        background: #f1f5f9;
+    }
+
+    .nav-content::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+
+    .nav-content::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+`);
+
+    let allPosts = [];
+    let navigationMenu = null;
+    let viewedPosts = new Set();
+
+    // Try to load saved viewed posts from localStorage
     try {
-        localStorage.setItem('challengesViewedPosts', JSON.stringify([...viewedPosts]));
+        const saved = localStorage.getItem('challengesViewedPosts');
+        if (saved) {
+            viewedPosts = new Set(JSON.parse(saved));
+        }
     } catch (e) {
-        console.log('Challenge Navigator: Could not save viewed posts to storage');
+        console.log('Challenge Navigator: Could not load viewed posts from storage');
     }
-}
+
+    function saveViewedPosts() {
+        try {
+            localStorage.setItem('challengesViewedPosts', JSON.stringify([...viewedPosts]));
+        } catch (e) {
+            console.log('Challenge Navigator: Could not save viewed posts to storage');
+        }
+    }
 
     function findDeletedPosts() {
 
@@ -410,7 +472,7 @@ function saveViewedPosts() {
             // Direct replies to the main post
             const directReplies = element.querySelectorAll(':scope > div > .js-reply');
             directReplies.forEach((replyElement, replyIndex) => {
-                const replyInfo = extractPostInfo(replyElement, index + replyIndex + 0.1);
+                const replyInfo = extractPostInfo(replyElement, `${index}-${replyIndex}`);
                 if (replyInfo) {
                     // Mark as reply and add indentation info
                     replyInfo.isReply = true;
@@ -420,11 +482,14 @@ function saveViewedPosts() {
             });
         });
 
-        // Sort posts: active posts first (by order), then deleted posts at the bottom (by order)
+        // Sort posts: normal posts first (by order), then deleted posts at the bottom (by order)
         return posts.sort((a, b) => {
             if (a.isDeleted && !b.isDeleted) return 1; // a is deleted, b is not - a goes after b
             if (!a.isDeleted && b.isDeleted) return -1; // a is not deleted, b is - a goes before b
-            return a.order - b.order; // Both same deletion status, sort by order
+
+            // Use numeric collation for hierarchical sorting
+            const collator = new Intl.Collator(undefined, { numeric: true });
+            return collator.compare(a.order.toString(), b.order.toString());
         });
     }
 
@@ -436,9 +501,9 @@ function saveViewedPosts() {
 
         // Check if post is deleted
         const isDeleted = element.classList.contains('bg-red-100') ||
-                         element.querySelector('.bg-red-100') ||
-                         (element.querySelector('.fc-red-400') &&
-                          element.querySelector('.fc-red-400').textContent.includes('Deleted by'));
+              element.querySelector('.bg-red-100') ||
+              (element.querySelector('.fc-red-400') &&
+               element.querySelector('.fc-red-400').textContent.includes('Deleted by'));
 
         // Extract author information
         let author = 'Unknown Author';
@@ -446,8 +511,9 @@ function saveViewedPosts() {
         if (hiddenNameSpan) {
             author = hiddenNameSpan.textContent.trim();
         }
+
         // Extract date information
-        let date = 'Unknown Date';
+        let date;
         const dateSelectors = [
             'time',
             '.relativetime',
@@ -459,14 +525,18 @@ function saveViewedPosts() {
         for (const selector of dateSelectors) {
             const dateElement = element.querySelector(selector);
             if (dateElement) {
-                date = dateElement.getAttribute('title') ||
-                       dateElement.getAttribute('datetime') ||
-                       dateElement.textContent.trim();
-                if (date && date !== 'Unknown Date') {
+                const foundDate = dateElement.getAttribute('title') ||
+                      dateElement.getAttribute('datetime') ||
+                      dateElement.textContent.trim();
+                if (foundDate) {
+                    date = foundDate;
                     break;
                 }
             }
         }
+
+        // Set fallback only if nothing was found
+        date ||= 'Unknown Date';
 
         // Extract post preview (doesn't work properly for deleted posts)
         let preview = '';
@@ -494,7 +564,7 @@ function saveViewedPosts() {
             element: element,
             author: author,
             date: date,
-            preview: preview || 'No preview available',
+            preview: preview || 'No preview available [Code Only]',
             isDeleted: isDeleted,
             order: order
         };
@@ -513,9 +583,7 @@ function saveViewedPosts() {
         header.className = 'nav-header';
 
         const titleContainer = document.createElement('div');
-        titleContainer.style.display = 'flex';
-        titleContainer.style.alignItems = 'center';
-        titleContainer.style.gap = '8px';
+        titleContainer.className = 'nav-title-container';
 
         const title = document.createElement('span');
         title.className = 'nav-title';
@@ -539,16 +607,15 @@ function saveViewedPosts() {
 
         // Add posts to the menu
         allPosts.forEach((post, index) => {
-            const item = document.createElement('div');
+            const item = document.createElement('a');
+            item.href = `#${post.id}`;
             item.className = `nav-item ${post.isDeleted ? 'deleted' : ''} ${post.isReply ? 'reply' : ''}`;
 
             const postInfo = document.createElement('div');
             postInfo.className = 'post-info';
 
             const authorLine = document.createElement('div');
-            authorLine.style.display = 'flex';
-            authorLine.style.alignItems = 'center';
-            authorLine.style.justifyContent = 'space-between';
+            authorLine.className = 'post-author-line';
 
             const author = document.createElement('span');
             author.className = 'post-author';
@@ -582,19 +649,20 @@ function saveViewedPosts() {
             item.appendChild(postInfo);
 
             // Add click handler to navigate to post
-            item.addEventListener('click', () => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
                 const targetElement = document.getElementById(post.id);
                 if (targetElement) {
+                    window.location.hash = post.id;
+
                     targetElement.scrollIntoView({
                         behavior: 'smooth',
-                        block: 'center'
+                        block: 'start'
                     });
 
-                    // Highlight the post briefly
-                    targetElement.style.transition = 'background-color 0.3s ease';
-                    targetElement.style.backgroundColor = '#fef3cd';
+                    targetElement.classList.add('post-highlight');
                     setTimeout(() => {
-                        targetElement.style.backgroundColor = '';
+                        targetElement.classList.remove('post-highlight');
                     }, 2000);
                 }
             });
@@ -827,7 +895,6 @@ function saveViewedPosts() {
         // Add checkboxes to all posts and handle viewed posts
         allPostElements.forEach(postElement => {
             // Check if THIS specific post element is in the deleted posts list
-            const deletedPosts = findDeletedPosts();
             const isDeleted = deletedPosts.includes(postElement);
 
             // Add checkbox to non-deleted posts
@@ -841,41 +908,46 @@ function saveViewedPosts() {
             }
         });
     }
+
     function addGlobalToggles() {
-    // Remove existing toggles if any
-    const existingViewed = document.querySelector('.global-toggle-viewed');
-    if (existingViewed) existingViewed.remove();
+        // Remove existing toggles if any
+        const existingViewed = document.querySelector('.global-toggle-viewed');
+        if (existingViewed) existingViewed.remove();
 
-    // Global toggle for viewed posts
-    const globalToggleViewed = document.createElement('button');
-    globalToggleViewed.className = 'global-toggle-viewed';
-    globalToggleViewed.textContent = 'Expand All Viewed';
-    globalToggleViewed.title = 'Show/Hide all viewed posts';
+        // Global toggle for viewed posts
+        const globalToggleViewed = document.createElement('button');
+        globalToggleViewed.className = 'global-toggle-viewed';
+        globalToggleViewed.textContent = 'Expand All Viewed';
+        globalToggleViewed.title = 'Show/Hide all viewed posts';
 
-    globalToggleViewed.addEventListener('click', function() {
-        const allViewedToggleButtons = document.querySelectorAll('.expand-toggle');
-        const collapsedViewedPosts = document.querySelectorAll('.viewed-post-collapsed');
-        const expandedViewedPosts = document.querySelectorAll('.js-reply:has(.viewed-controls):not(.viewed-post-collapsed)');
+        globalToggleViewed.addEventListener('click', function() {
+            const allViewedToggleButtons = document.querySelectorAll('.expand-toggle');
+            const collapsedViewedPosts = document.querySelectorAll('.viewed-post-collapsed');
 
+            // Alternative to :has() selector for better browser compatibility
+            const expandedViewedPosts = Array.from(document.querySelectorAll('.js-reply')).filter(post =>
+                                                                                                  post.querySelector('.viewed-controls') && !post.classList.contains('viewed-post-collapsed')
+                                                                                                 );
 
-        const shouldExpand = false 
+            // If more posts are collapsed than expanded, expand all
+            const shouldExpand = collapsedViewedPosts.length >= expandedViewedPosts.length;
 
-        allViewedToggleButtons.forEach(btn => {
-            const post = btn.closest('.js-reply');
-            const isCurrentlyCollapsed = post && post.classList.contains('viewed-post-collapsed');
+            allViewedToggleButtons.forEach(btn => {
+                const post = btn.closest('.js-reply');
+                const isCurrentlyCollapsed = post && post.classList.contains('viewed-post-collapsed');
 
-            // Click button if state doesn't match desired state
-            if ((shouldExpand && isCurrentlyCollapsed) || (!shouldExpand && !isCurrentlyCollapsed)) {
-                btn.click();
-            }
+                // Click button if state doesn't match desired state
+                if ((shouldExpand && isCurrentlyCollapsed) || (!shouldExpand && !isCurrentlyCollapsed)) {
+                    btn.click();
+                }
+            });
+
+            // Update button text based on what action was just performed
+            globalToggleViewed.textContent = shouldExpand ? 'Collapse All Viewed' : 'Expand All Viewed';
         });
 
-        // Update button text
-        globalToggleViewed.textContent = shouldExpand ? 'Collapse All Viewed' : 'Expand All Viewed';
-    });
-
-    document.body.appendChild(globalToggleViewed);
-}
+        document.body.appendChild(globalToggleViewed);
+    }
 
     // Debug function to inspect the page structure
     function debugPageStructure() {
@@ -947,11 +1019,7 @@ function saveViewedPosts() {
         });
     }
 
-    // Wait for page to be ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        setTimeout(init, 100);
-    }
+    // @run-at document-end
+    init();
 
 })();
