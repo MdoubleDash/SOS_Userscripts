@@ -12,6 +12,7 @@
 - [Chat Input Character Count](#chat-input-character-count)
 - [Copy Code from StackExchange](#copy-code-from-stackexchange)
 - [Lobby Lighthouse](#lobby-lighthouse)
+- [Challenge Navigator](#challenge-navigator)
 
 ------
 
@@ -78,7 +79,12 @@
 
 #### [Lobby Lighthouse](https://stackapps.com/q/11810):
 
-   Userscript to load a list of template messages for the new Lobby Chatrooms. Click on the "Lighhouse..." button to get the list of messages.
+   A userscript to load a list of template messages for the new Lobby Chatrooms. Click on the "Lighhouse..." button to get the list of messages.
 
    <img src="https://i.sstatic.net/WxD94iJw.png" style="width:800px;"/>
+   
+#### [Challenge Navigator](https://stackapps.com/questions/11909/navigate-through-challenges)
 
+A userscript to add navigation functionality to Stack OVerflow's Challenges.
+
+<img src="https://i.sstatic.net/0bM4twXC.png" style="width=600px;"/>
