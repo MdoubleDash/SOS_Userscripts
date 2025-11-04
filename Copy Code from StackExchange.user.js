@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         Copy Code from StackExchange
 // @namespace    https://github.com/MdoubleDash
-// @version      0.5
-// @description  Add a copy button for code sections on StackExchange sites. Originally by kpym (https://gist.github.com/kpym/30d90be41ab5c248cdf7).
-// @author       MDoubleDash (@M--), kpym
+// @version      1.0
+// @description  Add a copy button for code sections on StackExchange sites with source attribution.
+// @source       Basic version adapted from kpym's gist (https://gist.github.com/kpym/30d90be41ab5c248cdf7)
+// @author       MDoubleDash (@M--)
 // @match        *://*.stackexchange.com/*
 // @match        *://*.stackoverflow.com/*
 // @match        *://*.superuser.com/*
@@ -18,6 +19,9 @@
 // ==/UserScript==
 /* jshint -W097 */
 'use strict';
+
+// Configuration
+const INCLUDE_ATTRIBUTION = true; // Set to false to disable attribution headers
 
 // ------------------------------------------
 // CSS part injected in the page
@@ -99,6 +103,142 @@ const copyIcon = `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2
 const checkIcon = `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>`;
 const errorIcon = `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>`;
 
+// Function to get the current license version from the page
+function getLicenseVersion(postContainer) {
+    // First try to find license info in the post's share dialog or nearby
+    const licenseLink = postContainer?.querySelector('a[href*="creativecommons.org"]') || 
+                       document.querySelector('a[href*="creativecommons.org"]');
+    if (licenseLink) {
+        const href = licenseLink.href;
+        if (href.includes('4.0')) return '4.0';
+        if (href.includes('3.0')) return '3.0';
+        if (href.includes('2.5')) return '2.5';
+    }
+    // Default to 4.0 for newer SE sites
+    return '4.0';
+}
+
+// Function to get post information for a code block
+function getPostInfo(codeBlock) {
+    // Find the closest answer or question container
+    const postContainer = codeBlock.closest('.answer, .question, [data-answerid], [data-questionid]');
+    
+    let postId = null;
+    let author = 'Unknown User';
+    let postUrl = window.location.href;
+    
+    if (postContainer) {
+        // Get post ID
+        const answerIdAttr = postContainer.getAttribute('data-answerid');
+        const questionIdAttr = postContainer.getAttribute('data-questionid');
+        
+        if (answerIdAttr) {
+            postId = answerIdAttr;
+            // Create answer URL
+            const questionMatch = window.location.pathname.match(/\/questions\/(\d+)/);
+            if (questionMatch) {
+                postUrl = `${window.location.origin}/a/${postId}`;
+            }
+        } else if (questionIdAttr) {
+            postId = questionIdAttr;
+            postUrl = `${window.location.origin}/q/${postId}`;
+        }
+        
+        // Check for community wiki first
+        const communityWiki = postContainer.querySelector('.community-wiki');
+        if (communityWiki) {
+            // For Community Wiki, look for the username link (not the revision history link)
+            // Look for a link to /users/ in the same user-info container as the community wiki indicator
+            const cwUserInfo = communityWiki.closest('.user-info, .post-signature');
+            if (cwUserInfo) {
+                const userLink = cwUserInfo.querySelector('a[href*="/users/"]');
+                if (userLink && userLink.textContent.trim() && !userLink.href.includes('/revisions')) {
+                    author = `Community Wiki (${userLink.textContent.trim()})`;
+                } else {
+                    author = 'Community Wiki';
+                }
+            } else {
+                author = 'Community Wiki';
+            }
+        } else {
+            // First, try to find active user links
+            const userSelectors = [
+                '.post-signature .user-details a[href*="/users/"]',
+                '.owner .user-details a[href*="/users/"]',
+                '.user-info .user-details a[href*="/users/"]',
+                '.user-details a[href*="/users/"]'
+            ];
+            
+            for (const selector of userSelectors) {
+                const userLink = postContainer.querySelector(selector);
+                if (userLink && userLink.textContent.trim() && 
+                    !userLink.textContent.includes('edited') && 
+                    !userLink.closest('.user-action-time')) {
+                    author = userLink.textContent.trim();
+                    break;
+                }
+            }
+            
+            // If no active user found, look for deleted users
+            if (author === 'Unknown User') {
+                // Look for deleted users in post signature areas
+                const signatureSelectors = [
+                    '.post-signature .user-details',
+                    '.owner .user-details', 
+                    '.user-info .user-details'
+                ];
+                
+                for (const selector of signatureSelectors) {
+                    const userDetails = postContainer.querySelector(selector);
+                    if (userDetails) {
+                        // Try to get the itemprop="name" content first (most reliable)
+                        const metaName = userDetails.querySelector('meta[itemprop="name"]');
+                        if (metaName && metaName.getAttribute('content')) {
+                            const nameContent = metaName.getAttribute('content');
+                            if (nameContent.match(/^user\d+$/)) {
+                                author = nameContent;
+                                break;
+                            }
+                        }
+                        
+                        // Fallback: look for text content that matches user pattern
+                        const textContent = userDetails.textContent.trim();
+                        const lines = textContent.split('\n').map(line => line.trim()).filter(line => line);
+                        for (const line of lines) {
+                            if (line.match(/^user\d+$/)) {
+                                author = line;
+                                break;
+                            }
+                        }
+                        if (author !== 'Unknown User') break;
+                    }
+                }
+            }
+        }
+    }
+    
+    return { postId, author, postUrl };
+}
+
+// Function to create attribution header
+function createAttribution(codeBlock) {
+    const { postId, author, postUrl } = getPostInfo(codeBlock);
+    const postContainer = codeBlock.closest('.answer, .question, [data-answerid], [data-questionid]');
+    const licenseVersion = getLicenseVersion(postContainer);
+    const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    
+    // For Community Wiki posts, don't use "Posted by" prefix
+    const authorLine = author.startsWith('Community Wiki') ? author : `Posted by ${author}`;
+    
+    return `>>>===========================================================<<<
+Source - ${postUrl}
+${authorLine}
+Retrieved ${currentDate}, License - CC-BY-SA ${licenseVersion}
+>>>===========================================================<<<
+
+`;
+}
+
 // Wait for the page to fully load and add copy button to code blocks
 window.addEventListener('load', function() {
     document.querySelectorAll('pre > code').forEach(function(codeBlock) {
@@ -123,7 +263,15 @@ window.addEventListener('load', function() {
     // Initialize clipboard.js
     const clipboard = new ClipboardJS('.copy-btn', {
         text: function(trigger) {
-            return trigger.nextElementSibling.textContent;
+            const codeBlock = trigger.nextElementSibling;
+            const codeContent = codeBlock.textContent;
+            
+            if (INCLUDE_ATTRIBUTION) {
+                const attribution = createAttribution(codeBlock);
+                return attribution + codeContent;
+            } else {
+                return codeContent;
+            }
         }
     });
 
