@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         Lobby Lighthouse
 // @namespace    https://github.com/MdoubleDash
-// @version      0.3
+// @version      0.3.1
 // @description  Add message templates for Stack Overflow/Stack Exchange lobbies in Chat
 // @author       MDoubleDash (@M--)
 // @match        https://chat.stackexchange.com/rooms/158962/stack-exchange-lobby
 // @match        https://chat.stackoverflow.com/rooms/259507/stack-overflow-lobby
 // @match        https://chat.stackexchange.com/rooms/1/sandbox
 // @match        https://chat.stackoverflow.com/rooms/1/sandbox
+// @match        https://chat.stackoverflow.com/rooms/259790/challenge-accepted
 // @downloadURL  https://github.com/MdoubleDash/SOS_Userscripts/raw/main/Lobby%20Lighthouse.user.js
 // @downloadURL  https://github.com/MdoubleDash/SOS_Userscripts/raw/main/Lobby%20Lighthouse.user.js
 // @grant        GM_setValue
@@ -278,6 +279,12 @@
             title: "No AI prompts",
             site: "",
             body: "Please note that this is a chat of human beings. Keep that in mind and communicate accordingly. Try to avoid the impression that you confuse this with an AI prompt."
+        },
+        {
+            title: "Discuss Challenges",
+            site: "SO",
+            body: "Please note that this room room is for discussing the **[Coding Challenges](https://stackoverflow.com/beta/challenges)**, and getting to know your fellow community members who participate there." +
+            "For general chat, please head to the [Stack Overflow's Lobby](https://chat.stackoverflow.com/rooms/259507/stack-overflow-lobby)."
         }
     ];
 
