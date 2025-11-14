@@ -283,7 +283,7 @@
         {
             title: "Discuss Challenges",
             site: "SO",
-            body: "Please note that this room room is for discussing the **[Coding Challenges](https://stackoverflow.com/beta/challenges)**, and getting to know your fellow community members who participate there." +
+            body: "Please note that this room is intended for discussing the **[Coding Challenges](https://stackoverflow.com/beta/challenges)** and getting to know your fellow community members who participate there." +
             "For general chat, please head to the [Stack Overflow's Lobby](https://chat.stackoverflow.com/rooms/259507/stack-overflow-lobby)."
         }
     ];
