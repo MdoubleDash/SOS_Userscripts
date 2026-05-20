@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Dupe Redirect Warning
 // @namespace    https://github.com/MdoubleDash
-// @version      0.5.0
+// @version      0.6.7
 // @description  Warns when a post/comment draft links to a question closed as duplicate with no answers and offers to add ?noredirect=1
 // @author       MDoubleDash (@M--)
 // @match        *://*.stackoverflow.com/*
@@ -28,7 +28,6 @@
 
     // ---------------------------------------------------------------------------
     // SVG icons
-    // https://www.svgviewer.dev
     //
     // Toolbar icon:
     //   License: MIT. Made by Bliss Design System:
@@ -118,6 +117,8 @@
         let m;
         SE_LINK_RE.lastIndex = 0;
         while ((m = SE_LINK_RE.exec(text)) !== null) {
+            // Skip if the match is a "path"
+            if (m.index > 0 && text[m.index - 1] === '/') continue;
             links.push({
                 raw:           m[0],
                 hostname:      m[1],
@@ -335,8 +336,11 @@
                     ? 'This question is closed as a duplicate and has no answers. Anonymous users will be silently redirected to the duplicate target.'
                     : 'This question was not returned by the API - it may be deleted. If so, anonymous users may still be redirected.';
 
-                const linkSpan = document.createElement('span');
-                linkSpan.style.cssText = 'font-family:monospace; font-size:12px; color:#333; word-break:break-all; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap';
+                const linkSpan = document.createElement('a');
+                linkSpan.href          = item.raw;
+                linkSpan.target        = '_blank';
+                linkSpan.rel           = 'noopener noreferrer';
+                linkSpan.style.cssText = 'font-family:monospace; font-size:12px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block;';
                 linkSpan.textContent   = item.raw;
                 linkSpan.title         = titleText;
 
@@ -347,12 +351,11 @@
                 fixBtn.textContent   = item.status === 'redirect' ? 'Replace with ?noredirect=1' : 'Add ?noredirect=1 anyway';
                 fixBtn.addEventListener('click', () => {
                     replaceInTextarea(textarea, item.raw, item.canonicalUrl);
-                    row.style.textDecoration = 'line-through';
-                    row.style.opacity        = '0.5';
-                    fixBtn.disabled          = true;
-                    fixBtn.textContent       = 'Replaced';
+                    linkSpan.href      = item.canonicalUrl;
+                    linkSpan.textContent = item.canonicalUrl;
+                    fixBtn.disabled    = true;
+                    fixBtn.textContent = 'Replaced';
                 });
-
                 row.appendChild(icon);
                 row.appendChild(linkSpan);
                 row.appendChild(fixBtn);
